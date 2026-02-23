@@ -1,0 +1,43 @@
+name: Supabase keep-alive
+
+on:
+  # Run every 2 days at 09:00 UTC (days 2, 4, 6, 8, … of the month)
+  # For daily instead, use: cron: "0 9 * * *"
+  schedule:
+    - cron: "0 9 */2 * *"
+  # Allow manual run from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  hit-cron-url:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit app cron URL (no secrets)
+        env:
+          CRON_URL: ${{ vars.CRON_URL }}
+        run: |
+          # Default GitHub Pages URL (owner.github.io/repo)
+          if [ -z "$CRON_URL" ]; then
+            CRON_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/?cron=1"
+          fi
+
+          echo "Hitting: $CRON_URL"
+          HTTP_CODE=$(curl -s -L -o cron-response.html -w "%{http_code}" "$CRON_URL")
+          echo "HTTP: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Request failed."
+            echo "---- response (first 200 lines) ----"
+            sed -n '1,200p' cron-response.html || true
+            exit 1
+          fi
+
+          if grep -q ">OK<" cron-response.html; then
+            echo "Cron page returned OK."
+            exit 0
+          fi
+
+          echo "Cron page did not return OK (it may still have run)."
+          echo "---- response (first 200 lines) ----"
+          sed -n '1,200p' cron-response.html || true
+          exit 1
