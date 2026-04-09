@@ -1,5 +1,9 @@
 name: Supabase Keep Alive
 
+env:
+  # Opt into Node.js 24 for JavaScript-based GitHub Actions (checkout/setup-node/etc.)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   schedule:
     # Every 2 days at 09:00 UTC
@@ -14,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - name: Ping Supabase REST
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
