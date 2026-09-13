@@ -14,7 +14,11 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
   const url = event.request.url;
-  const isApiCall = url.includes('supabase.co') || url.includes('/rest/v1/') || url.includes('/auth/v1/');
+  const isApiCall =
+    url.includes('getpantry.cloud') ||
+    url.includes('supabase.co') ||
+    url.includes('/rest/v1/') ||
+    url.includes('/auth/v1/');
 
   // Only handle GET requests for static files, and ignore ALL API calls
   if (event.request.method !== 'GET' || isApiCall) {
